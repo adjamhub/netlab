@@ -1,55 +1,45 @@
-# Capitolo 5 — API REST
+# API REST
 
-## Obiettivi
-Al termine di questo capitolo sarai in grado di:
-- capire cos'è un'API REST e come si differenzia da una web app classica
-- restituire dati in formato JSON con `jsonify`
-- ricevere dati JSON in ingresso con `request.get_json()`
-- gestire i codici di stato HTTP in modo appropriato
-- organizzare il codice con i Blueprint
 
----
+### Web app vs API
 
-## Parte 1 — Cos'è un'API REST
-
-### 1.1 Web app vs API
-
-Fino ad ora Flask ha restituito pagine HTML destinate al browser. Un'**API** (Application Programming Interface) funziona diversamente: invece di HTML, restituisce dati — tipicamente in formato JSON — che possono essere consumati da qualsiasi client: un'altra applicazione, un'app mobile, uno script Python, un dispositivo IoT.
+Fino ad ora Flask ha restituito pagine HTML destinate al browser. Un'**API** (Application Programming Interface) funziona diversamente: invece di HTML, 
+restituisce dati — tipicamente in formato JSON — che possono essere consumati da qualsiasi client: 
+un'altra applicazione, un'app mobile, uno script Python, un dispositivo IoT.
 
 Il confronto è semplice:
 
-| | Web app | API REST |
-|---|---|---|
-| Risponde con | HTML | JSON |
-| Destinatario | Browser umano | Altro software |
-| Interazione | Form, click | Richieste HTTP programmatiche |
+|              | Web app       | API REST                      |
+|--------------|---------------|-------------------------------|
+| Risponde con | HTML          | JSON                          |
+| Destinatario | Browser umano | Altro software                |
+| Interazione  | Form, click   | Richieste HTTP programmatiche |
 
 Le due cose non si escludono: una stessa applicazione Flask può avere sia pagine HTML per l'utente, sia endpoint API per altri client.
 
 ---
 
-### 1.2 I principi REST
+### I principi REST
 
-REST (Representational State Transfer) è uno stile architetturale per le API. I concetti chiave sono:
+**REST (Representational State Transfer)** è uno stile architetturale per le API. I concetti chiave sono:
 
-- Le **risorse** sono identificate da URL (es. `/api/libri`, `/api/libri/3`)
-- Le **operazioni** sono espresse dai metodi HTTP:
+- Tutte le **risorse** sono identificate da URL (es. `/api/libri`, `/api/libri/3`)
+- Tutte le **operazioni** sulle risorse sono espresse dai metodi HTTP:
 
-| Metodo | Operazione | Esempio |
-|---|---|---|
-| GET | Leggi | `GET /api/libri` → lista tutti i libri |
-| GET | Leggi uno | `GET /api/libri/3` → leggi il libro 3 |
-| POST | Crea | `POST /api/libri` → aggiungi un libro |
-| PUT | Sostituisci | `PUT /api/libri/3` → sostituisci il libro 3 |
-| DELETE | Elimina | `DELETE /api/libri/3` → elimina il libro 3 |
+| Metodo | Operazione  | Esempio               | Effetto                | 
+|--------|-------------|-----------------------|------------------------|
+| GET    | Leggi       | `GET /api/libri`      | lista tutti i libri    |
+| GET    | Leggi uno   | `GET /api/libri/3`    | leggi il libro 3       |
+| POST   | Crea        | `POST /api/libri`     | aggiungi un libro      |
+| PUT    | Sostituisci | `PUT /api/libri/3`    | sostituisci il libro 3 |
+| DELETE | Elimina     | `DELETE /api/libri/3` | elimina il libro 3     |
 
 ---
 
-## Parte 2 — Rispondere con JSON
+## Rispondere con JSON
 
-### 2.1 `jsonify`
-
-Flask mette a disposizione la funzione `jsonify` per restituire dati JSON in modo corretto — imposta automaticamente l'header `Content-Type: application/json`:
+Flask mette a disposizione la funzione `jsonify` per restituire dati JSON in modo corretto, 
+ovvero impostando automaticamente l'header `Content-Type: application/json`:
 
 ```python
 from flask import Flask, jsonify
@@ -71,14 +61,14 @@ def numeri():
 
 ---
 
-### 2.2 Codici di stato
+### Codici di stato
 
 Con `jsonify` puoi specificare il codice di stato HTTP come secondo valore di ritorno:
 
 ```python
 @app.route('/api/libri/<int:indice>')
 def get_libro(indice):
-    libri = leggi_libri()
+    libri = leggi_dati()
 
     if indice < 0 or indice >= len(libri):
         return jsonify({'errore': 'Libro non trovato'}), 404
@@ -90,7 +80,7 @@ Restituire il codice corretto è importante: i client lo usano per capire se la 
 
 ---
 
-### 2.3 API in sola lettura — GET
+### API in sola lettura — GET
 
 Costruiamo i primi due endpoint GET per la nostra lista libri:
 
@@ -101,22 +91,25 @@ import json
 app = Flask(__name__)
 FILE = 'libri.json'
 
-def leggi_libri():
+def leggi_dati():
     try:
-        with open(FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        file = open(FILE, 'r')
+        contenuto = file.read()
+        file.close()
+        dizionario_dati = json.loads(contenuto)
     except (FileNotFoundError, json.JSONDecodeError):
-        return []
+        dizionario_dati = []  # valore di default
+        return dizionario_dati
 
 # Lista tutti i libri
 @app.route('/api/libri', methods=['GET'])
 def get_libri():
-    return jsonify(leggi_libri()), 200
+    return jsonify(leggi_dati()), 200
 
 # Legge un singolo libro per indice
 @app.route('/api/libri/<int:indice>', methods=['GET'])
 def get_libro(indice):
-    libri = leggi_libri()
+    libri = leggi_dati()
     if indice < 0 or indice >= len(libri):
         return jsonify({'errore': 'Libro non trovato'}), 404
     return jsonify(libri[indice]), 200
@@ -137,19 +130,22 @@ print(r.json())       # primo libro
 
 ---
 
-### Esercizi — Parte 2
+### Esercizi
 
-**Esercizio 2.1**
+**Esercizio 521**
+
 Aggiungi un endpoint `GET /api/libri/letti` che restituisca solo i libri con `letto: true`. Se non ce ne sono, restituisci una lista vuota con codice `200`.
 
-**Esercizio 2.2**
-Aggiungi un endpoint `GET /api/libri/cerca?autore=...` che filtri i libri per autore (ricerca case-insensitive). Se il parametro `autore` non è presente, restituisci un errore `400` con un messaggio appropriato.
+-- 
+
+**Esercizio 522**
+
+Aggiungi un endpoint `GET /api/libri/cerca?autore=...` che filtri i libri per autore (ricerca case-insensitive). 
+Se il parametro `autore` non è presente, restituisci un errore `400` con un messaggio appropriato.
 
 ---
 
-## Parte 3 — Ricevere dati JSON
-
-### 3.1 `request.get_json()`
+## Ricevere dati JSON
 
 Quando un client invia dati JSON nel corpo della richiesta POST, si leggono con `request.get_json()`:
 
@@ -169,9 +165,9 @@ def add_libro():
     if not titolo or not autore:
         return jsonify({'errore': 'Titolo e autore sono obbligatori'}), 400
 
-    libri = leggi_libri()
+    libri = leggi_dati()
     libri.append({'titolo': titolo, 'autore': autore, 'letto': False})
-    salva_libri(libri)
+    salva_dati(libri)
 
     return jsonify({'messaggio': f'"{titolo}" aggiunto'}), 201
 ```
@@ -193,19 +189,19 @@ print(r.json())       # {'messaggio': '"Il nome della rosa" aggiunto'}
 
 ---
 
-### 3.2 DELETE
+### DELETE
 
 ```python
 @app.route('/api/libri/<int:indice>', methods=['DELETE'])
 def delete_libro(indice):
-    libri = leggi_libri()
+    libri = leggi_dati()
 
     if indice < 0 or indice >= len(libri):
         return jsonify({'errore': 'Libro non trovato'}), 404
 
     titolo = libri[indice]['titolo']
     libri.pop(indice)
-    salva_libri(libri)
+    salva_dati(libri)
 
     return jsonify({'messaggio': f'"{titolo}" eliminato'}), 200
 ```
@@ -220,12 +216,12 @@ print(r.json())       # {'messaggio': '... eliminato'}
 
 ---
 
-### 3.3 PUT — aggiornamento completo
+### PUT — aggiornamento completo
 
 ```python
 @app.route('/api/libri/<int:indice>', methods=['PUT'])
 def update_libro(indice):
-    libri = leggi_libri()
+    libri = leggi_dati()
 
     if indice < 0 or indice >= len(libri):
         return jsonify({'errore': 'Libro non trovato'}), 404
@@ -242,7 +238,7 @@ def update_libro(indice):
         return jsonify({'errore': 'Titolo e autore sono obbligatori'}), 400
 
     libri[indice] = {'titolo': titolo, 'autore': autore, 'letto': letto}
-    salva_libri(libri)
+    salva_dati(libri)
 
     return jsonify({'messaggio': f'"{titolo}" aggiornato'}), 200
 ```
@@ -260,31 +256,38 @@ print(r.json())       # {'messaggio': '... aggiornato'}
 
 ---
 
-### Esercizi — Parte 3
+### Esercizi
 
-**Esercizio 3.1**
-Testa tutti gli endpoint con `curl` o con un client REST a scelta (es. Bruno, Postman, o semplicemente il browser per i GET). Verifica che i codici di stato siano corretti in ogni caso.
+**Esercizio 541**
 
-**Esercizio 3.2**
+Crea uno script Python con `requests` e verifica che i codici di stato siano corretti in ogni caso.
+
+--
+
+**Esercizio 542**
+
 Scrivi uno script Python separato `client.py` che usi il modulo `requests` per:
 1. aggiungere tre libri tramite POST
 2. leggere la lista completa tramite GET
 3. eliminare il secondo libro tramite DELETE
 4. rileggere la lista per verificare il risultato
 
-> 💡 *Suggerimento:* installa `requests` con `pip install requests`. Per inviare JSON usa `requests.post(url, json={...})`.
+> 💡 *Suggerimento:* 
+> 
+> installa `requests` con `pip install requests`. 
+> 
+> Per inviare JSON usa `requests.post(url, json={...})`.
 
 ---
 
-## Parte 4 — Blueprint
+## Blueprint
 
-### 4.1 Perché i Blueprint
-
-Finora tutto il codice sta in `app.py`. Man mano che l'applicazione cresce, diventa difficile da leggere e mantenere. I **Blueprint** di Flask permettono di suddividere le route in moduli separati.
+Finora tutto il codice sta in `app.py`. Man mano che l'applicazione cresce, diventa difficile da leggere e mantenere. 
+I **Blueprint** di Flask permettono di suddividere le route in moduli separati.
 
 ---
 
-### 4.2 Creare un Blueprint
+### Creare un Blueprint
 
 Creiamo un file separato `api.py` per tutte le route dell'API:
 
@@ -297,24 +300,29 @@ api = Blueprint('api', __name__)
 
 FILE = 'libri.json'
 
-def leggi_libri():
+def leggi_dati():
     try:
-        with open(FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        file = open(FILE, 'r')
+        contenuto = file.read()
+        file.close()
+        dizionario_dati = json.loads(contenuto)
     except (FileNotFoundError, json.JSONDecodeError):
-        return []
-
-def salva_libri(libri):
-    with open(FILE, 'w', encoding='utf-8') as f:
-        json.dump(libri, f, indent=2, ensure_ascii=False)
+        dizionario_dati = []  # valore di default
+        return dizionario_dati
+        
+def salva_dati(dati):
+    file = open(FILE, 'w')
+    dati_json = json.dumps(dati, indent=2, ensure_ascii=False)
+    file.write(dati_json)
+    file.close()
 
 @api.route('/libri', methods=['GET'])
 def get_libri():
-    return jsonify(leggi_libri()), 200
+    return jsonify(leggi_dati()), 200
 
 @api.route('/libri/<int:indice>', methods=['GET'])
 def get_libro(indice):
-    libri = leggi_libri()
+    libri = leggi_dati()
     if indice < 0 or indice >= len(libri):
         return jsonify({'errore': 'Libro non trovato'}), 404
     return jsonify(libri[indice]), 200
@@ -359,25 +367,12 @@ corso_flask/
 
 ---
 
-### Esercizio — Parte 4
+### Esercizio
 
-**Esercizio 4.1**
+**Esercizio 561**
+
 Riorganizza il progetto usando i Blueprint: sposta tutte le route API in `api.py` e tutte le route della web app in `views.py`. Il file `app.py` deve contenere solo la creazione dell'app e la registrazione dei due Blueprint.
 
----
-
-## Riepilogo
-
-| Concetto | Descrizione |
-|---|---|
-| `jsonify(dati)` | Restituisce una risposta JSON |
-| `request.get_json()` | Legge il corpo JSON della richiesta |
-| `GET` | Legge dati |
-| `POST` | Crea una nuova risorsa |
-| `PUT` | Aggiorna una risorsa esistente |
-| `DELETE` | Elimina una risorsa |
-| `200 OK` | Richiesta andata a buon fine |
-| `201 Created` | Risorsa creata con successo |
-| `400 Bad Request` | Dati mancanti o non validi |
-| `404 Not Found` | Risorsa non trovata |
-| `Blueprint` | Modulo per organizzare le route |
+<br>
+<br>
+<br>

@@ -1,81 +1,31 @@
-# Capitolo 1 — Setup, primi passi e routing
+# Setup, primi passi e routing
 
-## Obiettivi
-Al termine di questo capitolo sarai in grado di:
-- installare Flask in un ambiente virtuale
-- creare una prima applicazione funzionante
-- definire route con parametri statici e dinamici
-- gestire le richieste GET e POST
 
----
-
-## Parte 1 — Setup e primi passi
-
-### Cos'è Flask
-
-Flask è un **framework web** scritto in Python. Serve a costruire applicazioni web e API in modo semplice e veloce, senza dover gestire da zero tutta la complessità di un server HTTP.
-
-Esistono framework più grandi e completi, come Django, ma Flask è volutamente minimale: ti dà gli strumenti essenziali e ti lascia libero di aggiungere solo quello che ti serve.
-
-È molto usato per:
-- applicazioni web di piccole e medie dimensioni
-- API REST
-- prototipi e progetti didattici
-
----
-
-### 1.1 Installazione
-
-#### Python e pip
-Prima di tutto, assicurati di avere Python 3.8 o superiore installato. Verifica dal terminale:
-
-```bash
-python --version
-```
-
-#### Virtual environment
-È buona pratica lavorare in un **ambiente virtuale**: uno spazio isolato dove installare i pacchetti del progetto senza interferire con il resto del sistema.
-
-Crea una cartella per il progetto ed entra al suo interno:
-
-```bash
-mkdir corso_flask
-cd corso_flask
-```
-
-Crea l'ambiente virtuale:
-
-```bash
-python -m venv venv
-```
-
-Attivalo:
-
-```bash
-# Windows
-venv\Scripts\activate
-
-# macOS / Linux
-source venv/bin/activate
-```
-
-Quando l'ambiente è attivo, vedrai `(venv)` all'inizio del prompt.
-
-#### Installazione di Flask
+Flask è un pacchetto disponibile su PyPi come tanti altri prima d'ora. Se vuoi semplicemente aggiungere il pacchetto `flask` alla tua installazione, da Thonny,
+apri il terminale da `Strumenti` ---> `Apri shell di sistema` e digita:
 
 ```bash
 pip install flask
 ```
 
-Verifica che tutto sia andato a buon fine:
+Se invece vuoi creare un progetto con `uv`, allora crea una applicazione semplice e aggiungi flask come dipendenza! Da un normale terminale (non quello di Thonny)
+digita:
 
 ```bash
-flask --version
+uv init progettoFlask
+cd progettoFlask
+uv add flask
 ```
 
----
+Il primo comando crea un progetto (una cartella) chiamata `progettoFlask`, con il secondo ci entri dentro, con il terzo aggiungi la dipendenza flask al progetto.
+Da quello stesso terminale, in quella stessa cartella, per eseguire il progetto, ti basterà eseguire:
 
-### 1.2 La prima applicazione
+```bash
+uv run
+```
+
+
+### La prima applicazione
 
 Crea un file chiamato `app.py` nella cartella del progetto e scrivi questo codice:
 
@@ -112,7 +62,7 @@ Apri il browser e vai all'indirizzo `http://127.0.0.1:5000`. Vedrai scritto: **C
 
 ---
 
-### 1.3 Come funziona
+### Come funziona
 
 Analizziamo il codice riga per riga:
 
@@ -131,37 +81,48 @@ Crea un'istanza dell'applicazione. `__name__` è una variabile Python che contie
 def home():
     return 'Ciao, Flask!'
 ```
-Il **decorator** `@app.route('/')` dice a Flask: *"quando il browser richiede la pagina `/`, esegui la funzione `home`"*. La funzione restituisce il testo che il browser mostrerà.
+Il **decorator** `@app.route('/')` dice a Flask: *"quando il browser richiede la pagina `/`, esegui la funzione `home`"*. 
+La funzione restituisce il testo che il browser mostrerà.
 
 ```python
 app.run(debug=True)
 ```
 Avvia il server. Il parametro `debug=True` è utile durante lo sviluppo: riavvia automaticamente il server ad ogni modifica del codice e mostra errori dettagliati nel browser.
 
-> ⚠️ **Attenzione:** `debug=True` non va mai usato in produzione.
+> ⚠️ **Attenzione:** 
+> 
+> `debug=True` non va mai usato in produzione.
 
 ---
 
-### Esercizi — Parte 1
+### Esercizi semplici su Flask
 
-**Esercizio 1.1**
+**Esercizio 1**
+
 Modifica `app.py` in modo che la pagina principale mostri il tuo nome e cognome.
 
-**Esercizio 1.2**
+-- 
+
+**Esercizio 2**
+
 Aggiungi una seconda funzione che risponda all'indirizzo `/saluto` e restituisca il testo `"Benvenuto nel corso di Flask!"`.
 
-> 💡 *Suggerimento:* segui lo stesso schema della funzione `home`, cambiando il path nel decorator e il nome della funzione.
+> 💡 *Suggerimento:* 
+> 
+> Segui lo stesso schema della funzione `home`, cambiando il path nel decorator e il nome della funzione.
 
-**Esercizio 1.3**
+--
+
+**Esercizio 3**
+
 Cosa succede se provi ad andare su un indirizzo che non esiste, come `http://127.0.0.1:5000/pippo`? Prova e descrivi quello che vedi.
 
 ---
 
-## Parte 2 — Routing e views
+## Routing e views
 
-### 2.1 Route statiche e dinamiche
-
-Fino ad ora abbiamo definito route con URL fissi, come `/` e `/saluto`. Flask permette però di definire **route dinamiche**, dove parte dell'URL è una variabile.
+Fino ad ora abbiamo definito route **statiche** (con URL fissi), come `/` e `/saluto`. 
+Flask permette però di definire route **dinamiche**, dove parte dell'URL è una variabile.
 
 ```python
 @app.route('/utente/<nome>')
@@ -173,7 +134,8 @@ Se vai su `http://127.0.0.1:5000/utente/Marco`, il browser mostrerà: **Ciao, Ma
 
 La parte `<nome>` nell'URL viene catturata e passata come parametro alla funzione.
 
-#### Tipi di parametro
+
+### Tipi di parametro
 
 Per default il parametro è una stringa, ma puoi specificare un tipo:
 
@@ -185,15 +147,15 @@ def prodotto(id):
 
 I tipi disponibili sono:
 
-| Tipo | Esempio URL | Valore ricevuto |
-|---|---|---|
-| `string` (default) | `/utente/Marco` | `'Marco'` |
-| `int` | `/prodotto/42` | `42` |
-| `float` | `/prezzo/3.99` | `3.99` |
+|               Tipo | Esempio URL     | Valore ricevuto |
+|--------------------|-----------------|-----------------|
+| `string` (default) | `/utente/Marco` | `'Marco'`       |
+| `int`              | `/prodotto/42`  | `42`            |
+| `float`            | `/prezzo/3.99`  | `3.99`          |
 
 ---
 
-### 2.2 Metodi HTTP: GET e POST
+### Metodi HTTP: GET e POST
 
 Ogni richiesta HTTP ha un **metodo** che indica l'intenzione del client:
 - **GET** — chiede di ricevere dati (es. aprire una pagina)
@@ -250,11 +212,13 @@ def login():
     return 'Pagina di login (GET)'
 ```
 
-> 📝 I template HTML per i form li vedremo nel prossimo capitolo. Per ora basta sapere come Flask riceve i dati.
+> 📝 **NOTA**
+>
+> I template HTML per i form li vedremo nel prossimo capitolo. Per ora basta sapere come Flask riceve i dati.
 
 ---
 
-### 2.5 Restituire codici di stato HTTP
+### Restituire codici di stato HTTP
 
 Ogni risposta HTTP ha un **codice di stato**. Flask restituisce `200 OK` per default, ma puoi specificarne uno diverso:
 
@@ -266,39 +230,38 @@ def non_trovato():
 
 I codici più comuni che incontrerai:
 
-| Codice | Significato |
-|---|---|
-| `200` | OK — tutto bene |
-| `201` | Created — risorsa creata |
-| `400` | Bad Request — richiesta malformata |
-| `404` | Not Found — risorsa non trovata |
-| `500` | Internal Server Error — errore del server |
+| Codice | Significato                               |
+|--------|-------------------------------------------|
+| `200`  | OK — tutto bene                           |
+| `201`  | Created — risorsa creata                  |
+| `400`  | Bad Request — richiesta malformata        |
+| `404`  | Not Found — risorsa non trovata           |
+| `500`  | Internal Server Error — errore del server |
 
 ---
 
-### Esercizi — Parte 2
+### Esercizi 
 
-**Esercizio 2.1**
+**Esercizio 11**
+
 Crea una route `/saluta/<nome>` che restituisca `"Ciao, [nome]! Benvenuto nel corso."`.
 
-**Esercizio 2.2**
+--
+
+**Esercizio 12**
+
 Crea una route `/somma/<int:a>/<int:b>` che restituisca il risultato della somma dei due numeri.
 
-> 💡 *Suggerimento:* ricorda che puoi usare f-string per costruire la risposta.
+> 💡 *Suggerimento:* 
+>
+> Ricorda che puoi usare f-string per costruire la risposta.
 
-**Esercizio 2.3**
+--
+
+**Esercizio 13**
+
 Crea una route `/cerca` che legga un parametro `q` dalla query string e restituisca `"Risultati per: [q]"`. Se il parametro non è presente, restituisca `"Nessun termine di ricerca"` con codice di stato `400`.
 
----
-
-## Riepilogo
-
-| Concetto | Descrizione |
-|---|---|
-| Virtual environment | Ambiente isolato per i pacchetti del progetto |
-| `@app.route('/path')` | Associa un URL a una funzione |
-| `<variabile>` nel path | Parametro dinamico nell'URL |
-| `request.method` | Metodo HTTP della richiesta (GET, POST...) |
-| `request.args.get()` | Legge parametri dalla query string |
-| `request.form.get()` | Legge dati inviati con POST |
-| Codici di stato | Numero che indica l'esito della risposta |
+<br>
+<br>
+<br>

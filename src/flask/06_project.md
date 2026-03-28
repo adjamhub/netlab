@@ -1,6 +1,5 @@
-# Capitolo 6 — Progetto finale e verifica
+# Progetto finale e verifica
 
-## Obiettivi
 In questo capitolo metterai insieme tutto quello che hai imparato:
 - strutturare un progetto Flask completo
 - usare template Jinja2 con ereditarietà
@@ -10,9 +9,12 @@ In questo capitolo metterai insieme tutto quello che hai imparato:
 
 ---
 
-## Parte 1 — Progetto finale
+## Progetto finale
 
-Il progetto finale consiste nel costruire una piccola applicazione Flask completa, con interfaccia web e API REST. Puoi scegliere uno dei quattro temi proposti di seguito — la struttura richiesta è la stessa per tutti.
+Il progetto finale consiste nel costruire una piccola applicazione Flask completa, con interfaccia web e API REST. 
+Puoi scegliere uno dei quattro temi proposti di seguito — la struttura richiesta è la stessa per tutti.
+
+Realizza un'applicazione Flask che soddisfi i seguenti punti. Ogni punto è indipendente: se non riesci a completarne uno, passa al successivo.
 
 ---
 
@@ -120,57 +122,44 @@ progetto/
 
 ---
 
-## Parte 2 — Verifica pratica
+### Tempo per la prova
 
-La verifica si svolge al PC, individualmente, nel tempo stabilito dall'insegnante (indicativamente 60 minuti).
+100 minuti
 
-Viene assegnato un tema tra i quattro proposti — uguale per tutta la classe oppure a scelta dello studente, a discrezione dell'insegnante.
 
 ---
 
-### Traccia
+### Valutazione prova pratica
 
-Realizza un'applicazione Flask che soddisfi i seguenti punti. Ogni punto è indipendente: se non riesci a completarne uno, passa al successivo.
 
 **[20 punti] Web app**
+
 1. Crea il template `base.html` con navbar e almeno due link di navigazione
 2. Crea la pagina principale che mostra tutti gli elementi letti dal file JSON
 3. Aggiungi un form per inserire un nuovo elemento, con validazione e flash messages
 4. Implementa la funzione di eliminazione di un elemento
 
 **[20 punti] Storage JSON**
+
 5. I dati sono salvati e letti correttamente da file JSON
 6. L'applicazione gestisce correttamente il caso in cui il file non esista ancora
 7. Implementa le funzioni `leggi_dati()` e `salva_dati()`
 
 **[20 punti] API REST**
+
 8. Endpoint `GET /api/<risorsa>` che restituisce tutti gli elementi in JSON
 9. Endpoint `GET /api/<risorsa>/<indice>` che restituisce un singolo elemento, con `404` se non trovato
 10. Endpoint `POST /api/<risorsa>` che aggiunge un elemento ricevuto come JSON, con validazione
 11. Endpoint `DELETE /api/<risorsa>/<indice>` che elimina un elemento
 
 **[10 punti] Organizzazione**
+
 12. Le route web e le route API sono in Blueprint separati
 
 **[10 punti] Funzionalità aggiuntiva**
+
 13. Implementa la funzionalità aggiuntiva suggerita per il tema scelto
 
----
-
-### Criteri di valutazione
-
-| Punti | Descrizione |
-|---|---|
-| 80 – 70 | Tutti i punti completati, codice pulito e funzionante |
-| 69 – 55 | Web app e storage completi, API parziale |
-| 54 – 40 | Web app funzionante, storage e API incompleti |
-| < 40 | Lavoro incompleto o non funzionante |
-
----
-
-### Consigli per la verifica
-
-- Parti dal setup: crea la cartella, attiva il virtual environment, installa Flask
-- Costruisci prima la struttura di base (`app.py`, `base.html`, una route GET) e verifica che funzioni prima di andare avanti
-- Non bloccarti su un punto — se sei in difficoltà, passa al successivo e torna indietro se hai tempo
-- Testa ogni funzionalità man mano che la implementi, non aspettare la fine
+<br>
+<br>
+<br>

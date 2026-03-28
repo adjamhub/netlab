@@ -1,77 +1,75 @@
-# Capitolo 4 — File JSON come storage
+# File JSON come storage
 
-## Obiettivi
-Al termine di questo capitolo sarai in grado di:
-- leggere e scrivere file JSON con Python in un contesto Flask
-- applicare il pattern load → modifica → save
-- gestire gli errori più comuni (file mancante, JSON malformato)
-- costruire una piccola web app CRUD con Flask e file JSON
 
----
-
-## Parte 1 — JSON con Flask
-
-### 1.1 Lettura e scrittura su file
 
 Già conosci il formato JSON e il modulo `json` di Python. In Flask lo usiamo per mantenere i dati tra una richiesta e l'altra, salvandoli su file.
-
-Le due funzioni che useremo sono `json.load` e `json.dump`:
+Useremo codice tipo il seguente:
 
 ```python
 import json
 
-# Legge da file
-with open('dati.json', 'r', encoding='utf-8') as f:
-    dati = json.load(f)
+# caricare i dati da file
+file = open('dati.json', 'r')
+contenuto = file.read()
+file.close()
+dati = json.loads(contenuto)
 
-# Scrive su file
-with open('dati.json', 'w', encoding='utf-8') as f:
-    json.dump(dati, f, indent=2, ensure_ascii=False)
+# ... cose ...
+
+# Salvare i dati su file
+file = open('dati.json', 'w')
+dati_json = json.dumps(dizionario_dati, indent=2, ensure_ascii=False)
+file.write(dati_json)
+file.close()
 ```
 
 Il parametro `indent=2` formatta il JSON in modo leggibile. Il parametro `ensure_ascii=False` permette di salvare correttamente caratteri accentati.
 
 ---
 
-### 1.2 Il pattern load → modifica → save
+### Il pattern load → modifica → save
 
 Ogni volta che vogliamo aggiornare i dati su file, seguiamo sempre questo schema:
 
 ```python
+import json
+
 # 1. Leggi il file
-with open('dati.json', 'r', encoding='utf-8') as f:
-    dati = json.load(f)
+file = open('dati.json', 'r')
+contenuto = file.read()
+file.close()
+dizionario_dati = json.loads(contenuto)
 
 # 2. Modifica i dati in memoria
-dati.append({'nome': 'nuovo elemento'})
+dizionario_dati.append({'nome': 'nuovo elemento'})
 
 # 3. Riscrivi il file
-with open('dati.json', 'w', encoding='utf-8') as f:
-    json.dump(dati, f, indent=2, ensure_ascii=False)
+file = open('dati.json', 'w')
+dati_json = json.dumps(dizionario_dati, indent=2, ensure_ascii=False)
+file.write(dati_json)
+file.close()
 ```
-
----
-
-### 1.3 Gestione degli errori
 
 Due errori sono comuni quando si lavora con file JSON in Flask:
 
 - **`FileNotFoundError`** — il file non esiste ancora (prima esecuzione dell'app)
 - **`json.JSONDecodeError`** — il file esiste ma il contenuto non è JSON valido
 
-È buona pratica gestirli sempre insieme:
+È buona pratica gestirli sempre insieme.
 
 ```python
 try:
-    with open('dati.json', 'r', encoding='utf-8') as f:
-        dati = json.load(f)
+    file = open('dati.json', 'r')
+    contenuto = file.read()
+    file.close()
+    dizionario_dati = json.loads(contenuto)
 except (FileNotFoundError, json.JSONDecodeError):
-    dati = []  # valore di default
+    dizionario_dati = []  # valore di default
 ```
 
 ---
 
-### 1.4 Funzioni di utilità
+### Funzioni di utilità
 
 Quando un'applicazione legge e scrive spesso lo stesso file, conviene creare due funzioni di utilità per non ripetere il codice:
 
@@ -80,23 +78,29 @@ FILE = 'dati.json'
 
 def leggi_dati():
     try:
-        with open(FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        file = open(FILE, 'r')
+        contenuto = file.read()
+        file.close()
+        dizionario_dati = json.loads(contenuto)
     except (FileNotFoundError, json.JSONDecodeError):
-        return []
-
+        dizionario_dati = []  # valore di default
+        return dizionario_dati
+        
 def salva_dati(dati):
-    with open(FILE, 'w', encoding='utf-8') as f:
-        json.dump(dati, f, indent=2, ensure_ascii=False)
+    file = open(FILE, 'w')
+    dati_json = json.dumps(dati, indent=2, ensure_ascii=False)
+    file.write(dati_json)
+    file.close()
 ```
 
 D'ora in poi nel codice useremo solo `leggi_dati()` e `salva_dati()`.
 
 ---
 
-### Esercizio — Parte 1
+### Esercizio
 
-**Esercizio 1.1**
+**Esercizio 401**
+
 Scrivi uno script Python (senza Flask) che:
 1. legga una lista di nomi da `nomi.json` gestendo il caso in cui il file non esista
 2. aggiunga un nome passato da tastiera con `input()`
@@ -106,27 +110,25 @@ Eseguilo più volte e verifica che i nomi si accumulino correttamente.
 
 ---
 
-## Parte 2 — CRUD con Flask e JSON
+## CRUD con Flask e JSON
 
-### 2.1 Cos'è il CRUD
+***CRUD*** è l'acronimo delle quattro operazioni fondamentali sui dati:
 
-CRUD è l'acronimo delle quattro operazioni fondamentali sui dati:
-
-| Operazione | Significato | HTTP |
-|---|---|---|
-| **C**reate | Crea un nuovo elemento | POST |
-| **R**ead | Leggi / visualizza | GET |
-| **U**pdate | Modifica un elemento esistente | POST |
-| **D**elete | Elimina un elemento | POST / GET |
+| Operazione | Significato                    | HTTP        |
+|------------|--------------------------------|-------------|
+| **C**reate | Crea un nuovo elemento         | POST        |
+| **R**ead   | Leggi / visualizza             | GET         |
+| **U**pdate | Modifica un elemento esistente | POST        |
+| **D**elete | Elimina un elemento            | POST / GET  |
 
 Costruiremo una piccola app per gestire una lista di libri da leggere.
 
 ---
 
-### 2.2 Struttura del progetto
+### Struttura del progetto
 
 ```
-corso_flask/
+libreria_flask/
 ├── app.py
 ├── libri.json          ← creato automaticamente alla prima aggiunta
 └── templates/
@@ -137,32 +139,37 @@ corso_flask/
 
 ---
 
-### 2.3 Setup iniziale
+### Setup iniziale
 
 ```python
 from flask import Flask, render_template, request, flash, redirect, url_for
 import json
 
 app = Flask(__name__)
-app.secret_key = 'chiave_segreta'
+app.secret_key = 'chiave_super_segretissima'
 
 FILE = 'libri.json'
 
-def leggi_libri():
+def leggi_dati():
     try:
-        with open(FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        file = open(FILE, 'r')
+        contenuto = file.read()
+        file.close()
+        dizionario_dati = json.loads(contenuto)
     except (FileNotFoundError, json.JSONDecodeError):
-        return []
-
-def salva_libri(libri):
-    with open(FILE, 'w', encoding='utf-8') as f:
-        json.dump(libri, f, indent=2, ensure_ascii=False)
+        dizionario_dati = []  # valore di default
+        return dizionario_dati
+        
+def salva_dati(dati):
+    file = open(FILE, 'w')
+    dati_json = json.dumps(dati, indent=2, ensure_ascii=False)
+    file.write(dati_json)
+    file.close()
 ```
 
 ---
 
-### 2.4 Read e Create
+### Read e Create
 
 La pagina principale mostra la lista dei libri e un form per aggiungerne uno nuovo:
 
@@ -175,20 +182,21 @@ def index():
 
         if not titolo or not autore:
             flash('Titolo e autore sono obbligatori.', 'errore')
-            return redirect(url_for('index'))
+            return redirect( '/' )
 
         libri = leggi_libri()
 
         # Controlla duplicati
-        if any(l['titolo'].lower() == titolo.lower() for l in libri):
-            flash('Questo libro è già nella lista.', 'errore')
-            return redirect(url_for('index'))
+        for l in libri:
+            if l['titolo'].lower() == titolo.lower():
+                flash('Questo libro è già nella lista.', 'errore')
+                return redirect( '/' )
 
         libri.append({'titolo': titolo, 'autore': autore, 'letto': False})
         salva_libri(libri)
 
         flash(f'"{titolo}" aggiunto alla lista.', 'successo')
-        return redirect(url_for('index'))
+        return redirect( '/' )
 
     libri = leggi_libri()
     return render_template('index.html', libri=libri)
@@ -225,7 +233,7 @@ Il template `index.html`:
 
 ---
 
-### 2.5 Delete
+### Delete
 
 ```python
 @app.route('/elimina/<int:indice>')
@@ -234,19 +242,19 @@ def elimina(indice):
 
     if indice < 0 or indice >= len(libri):
         flash('Libro non trovato.', 'errore')
-        return redirect(url_for('index'))
-
+        return redirect( '/' )
+        
     titolo = libri[indice]['titolo']
     libri.pop(indice)
     salva_libri(libri)
 
     flash(f'"{titolo}" eliminato.', 'successo')
-    return redirect(url_for('index'))
+    return redirect( '/' )
 ```
 
 ---
 
-### 2.6 Update
+### Update
 
 Per la modifica usiamo un indice nell'URL e una pagina dedicata:
 
@@ -257,8 +265,8 @@ def modifica(indice):
 
     if indice < 0 or indice >= len(libri):
         flash('Libro non trovato.', 'errore')
-        return redirect(url_for('index'))
-
+        return redirect( '/' )
+        
     if request.method == 'POST':
         titolo = request.form.get('titolo', '').strip()
         autore = request.form.get('autore', '').strip()
@@ -266,14 +274,14 @@ def modifica(indice):
 
         if not titolo or not autore:
             flash('Titolo e autore sono obbligatori.', 'errore')
-            return redirect(url_for('modifica', indice=indice))
-
+            return redirect( f'/modifica/{indice}' )
+            
         libri[indice] = {'titolo': titolo, 'autore': autore, 'letto': letto}
         salva_libri(libri)
 
         flash(f'"{titolo}" aggiornato.', 'successo')
-        return redirect(url_for('index'))
-
+        return redirect( '/' )
+        
     return render_template('modifica.html', libro=libri[indice], indice=indice)
 ```
 
@@ -307,28 +315,24 @@ Il template `modifica.html`:
 
 ---
 
-### Esercizi — Parte 2
+### Esercizi
 
-**Esercizio 2.1**
+**Esercizio 421**
+
 Esegui l'app completa e verifica che tutte le operazioni CRUD funzionino correttamente. Apri `libri.json` con un editor di testo dopo ogni operazione e osserva come cambia il contenuto.
 
-**Esercizio 2.2**
+--
+
+**Esercizio 422**
+
 Aggiungi all'app un campo `anno` (anno di pubblicazione). Aggiorna il form di aggiunta, il form di modifica e la visualizzazione nella lista. Valida che l'anno sia un numero intero di 4 cifre.
 
-**Esercizio 2.3** *(più impegnativo)*
+--
+
+**Esercizio 423** *(più impegnativo)*
+
 Aggiungi una pagina `/cerca` con un form che permetta di cercare libri per autore. Il risultato deve essere una lista filtrata dei libri che contengono il termine cercato nel campo autore (ricerca case-insensitive). Se non viene trovato nessun risultato, mostra un messaggio appropriato.
 
----
-
-## Riepilogo
-
-| Concetto | Descrizione |
-|---|---|
-| `json.load(f)` | Legge JSON da file |
-| `json.dump(dati, f)` | Scrive JSON su file |
-| `indent=2` | Formatta il JSON in modo leggibile |
-| `ensure_ascii=False` | Permette caratteri accentati |
-| `FileNotFoundError` | Eccezione se il file non esiste |
-| `json.JSONDecodeError` | Eccezione se il JSON è malformato |
-| Pattern load → modifica → save | Schema base per aggiornare i dati |
-| CRUD | Create, Read, Update, Delete |
+<br>
+<br>
+<br>
