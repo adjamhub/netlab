@@ -18,7 +18,7 @@ L'attributo `name` di ogni campo è la chiave con cui Flask leggerà il valore i
 
 ---
 
-### 1.2 Un form completo
+### Un form completo
 
 Creiamo un esempio concreto: un form di contatto. Prima il template `contatto.html`:
 
@@ -247,3 +247,4 @@ Crea una piccola app con un form che permetta di inserire un nome in una lista. 
 <br>
 <br>
 <br>
+

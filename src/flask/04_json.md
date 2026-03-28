@@ -184,7 +184,7 @@ def index():
             flash('Titolo e autore sono obbligatori.', 'errore')
             return redirect( '/' )
 
-        libri = leggi_libri()
+        libri = leggi_dati()
 
         # Controlla duplicati
         for l in libri:
@@ -193,12 +193,12 @@ def index():
                 return redirect( '/' )
 
         libri.append({'titolo': titolo, 'autore': autore, 'letto': False})
-        salva_libri(libri)
+        salva_dati(libri)
 
         flash(f'"{titolo}" aggiunto alla lista.', 'successo')
         return redirect( '/' )
 
-    libri = leggi_libri()
+    libri = leggi_dati()
     return render_template('index.html', libri=libri)
 ```
 
@@ -238,7 +238,7 @@ Il template `index.html`:
 ```python
 @app.route('/elimina/<int:indice>')
 def elimina(indice):
-    libri = leggi_libri()
+    libri = leggi_dati()
 
     if indice < 0 or indice >= len(libri):
         flash('Libro non trovato.', 'errore')
@@ -246,7 +246,7 @@ def elimina(indice):
         
     titolo = libri[indice]['titolo']
     libri.pop(indice)
-    salva_libri(libri)
+    salva_dati(libri)
 
     flash(f'"{titolo}" eliminato.', 'successo')
     return redirect( '/' )
@@ -261,7 +261,7 @@ Per la modifica usiamo un indice nell'URL e una pagina dedicata:
 ```python
 @app.route('/modifica/<int:indice>', methods=['GET', 'POST'])
 def modifica(indice):
-    libri = leggi_libri()
+    libri = leggi_dati()
 
     if indice < 0 or indice >= len(libri):
         flash('Libro non trovato.', 'errore')
@@ -277,7 +277,7 @@ def modifica(indice):
             return redirect( f'/modifica/{indice}' )
             
         libri[indice] = {'titolo': titolo, 'autore': autore, 'letto': letto}
-        salva_libri(libri)
+        salva_dati(libri)
 
         flash(f'"{titolo}" aggiornato.', 'successo')
         return redirect( '/' )

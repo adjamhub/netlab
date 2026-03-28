@@ -179,7 +179,7 @@ L'oggetto `request` contiene tutte le informazioni sulla richiesta in arrivo: il
 
 ---
 
-### 2.3 Parametri GET nell'URL
+### Parametri GET nell'URL
 
 Oltre ai parametri dinamici nel path, puoi leggere i **parametri query string**, quelli che appaiono dopo il `?` nell'URL:
 
@@ -198,7 +198,7 @@ def cerca():
 
 ---
 
-### 2.4 Dati inviati con POST
+### Dati inviati con POST
 
 Quando un form HTML invia dati con il metodo POST, questi arrivano nel corpo della richiesta e si leggono con `request.form`:
 
